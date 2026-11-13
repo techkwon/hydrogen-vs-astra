@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09151b">
+<title>경계 · Water & Glass</title>
+<style>
+:root{color-scheme:dark;--ink:#e7eeeb;--muted:#92aaa9;--accent:#b6e8d1}*{box-sizing:border-box}body{margin:0;background:#09151b;color:var(--ink);font-family:Arial,"Apple SD Gothic Neo",sans-serif;overflow:hidden}canvas{display:block;width:100%;height:100%;position:fixed;inset:0;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}header{position:fixed;top:36px;left:42px;pointer-events:none} .eyebrow{font-size:10px;letter-spacing:3px;color:var(--accent);margin-bottom:16px}h1{font-size:48px;font-weight:400;letter-spacing:-3px;margin:0 0 10px}header p{font-size:12px;color:var(--muted);letter-spacing:.6px;margin:0}.index{position:fixed;right:42px;top:38px;text-align:right;font:10px/1.8 monospace;color:var(--muted);letter-spacing:2px}.index strong{display:block;color:var(--ink);font-weight:400}aside{position:fixed;right:30px;bottom:70px;width:248px;background:rgba(9,22,27,.72);backdrop-filter:blur(16px);border:1px solid #b7e4d019;border-radius:4px;padding:22px} .panel-title{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:23px}.dot{width:5px;height:5px;background:var(--accent);border-radius:50%;box-shadow:0 0 10px #b6e8d177}label{display:flex;justify-content:space-between;font-size:11px;color:#c2d2d0;margin-bottom:9px}output{color:var(--accent);font:10px monospace}input[type=range]{width:100%;height:18px;accent-color:var(--accent);margin:0 0 18px;cursor:pointer}select{background:#15292e;color:var(--ink);border:1px solid #496365;border-radius:3px;padding:5px 8px;font:11px inherit;width:100%;margin-bottom:20px}.actions{display:flex;gap:8px}button{font:11px inherit;color:var(--ink);border:1px solid #6c949455;background:transparent;padding:10px 12px;border-radius:3px;cursor:pointer;flex:1;transition:background .2s}button:hover{background:#b6e8d119}button:focus-visible,input:focus-visible,select:focus-visible,canvas:focus-visible{outline:2px solid var(--accent);outline-offset:4px}footer{position:fixed;bottom:26px;left:42px;right:42px;display:flex;justify-content:space-between;gap:20px;font-size:10px;letter-spacing:1px;color:#9db9b7;pointer-events:none}.legend{position:fixed;left:42px;bottom:86px;border-left:1px solid #b6e8d166;padding-left:13px;font:10px/2 monospace;color:#a0b9b7;pointer-events:none}.legend b{font-weight:400;color:#d7e9df}.error{position:fixed;inset:0;display:none;place-content:center;padding:30px;background:#09151b;text-align:center;z-index:10}.error p{max-width:560px;line-height:1.7;white-space:pre-wrap} @media(max-width:650px){header{left:22px;top:24px}h1{font-size:36px}.index{right:22px;top:25px;font-size:9px}aside{bottom:58px;right:16px;width:190px;padding:15px}.panel-title{margin-bottom:14px}input[type=range]{margin-bottom:10px}footer{left:22px;right:22px;bottom:20px;font-size:9px;letter-spacing:0}.legend{left:22px;bottom:77px;font-size:9px}.eyebrow{font-size:9px;letter-spacing:2px}header p{max-width:165px;font-size:10px;line-height:1.6}}@media(max-height:520px){header{top:18px}h1{font-size:30px}.eyebrow{margin-bottom:8px}aside{bottom:45px;padding:12px}.panel-title{margin-bottom:8px}input[type=range]{margin-bottom:5px}.legend{display:none}footer{bottom:15px}}
+</style>
+</head>
+<body>
+<canvas id="scene" tabindex="0" aria-label="물에 반쯤 잠긴 유리 조형물. 드래그 또는 방향키로 회전하고 스크롤 또는 더하기 빼기 키로 확대합니다."></canvas>
+<header><div class="eyebrow">OPTICAL STUDY / 001</div><h1>경계</h1><p>물과 유리, 빛이 방향을 바꾸는 순간.</p></header>
+<div class="index"><strong>WATER & GLASS</strong>실시간 광학 실험</div>
+<div class="legend"><b>01</b> AIR &nbsp; 1.000<br><b>02</b> WATER 1.333<br><b>03</b> GLASS 1.510</div>
+<aside aria-label="광학 조절"><div class="panel-title"><span>빛과 물성</span><span class="dot" aria-hidden="true"></span></div>
+<label for="waves">물결 <output id="wavesOut">0.55</output></label><input id="waves" type="range" min="0" max="1" step="0.01" value="0.55">
+<label for="dispersion">색 분산 <output id="dispersionOut">0.65</output></label><input id="dispersion" type="range" min="0" max="1" step="0.01" value="0.65">
+<label for="absorption">빛 흡수 <output id="absorptionOut">0.40</output></label><input id="absorption" type="range" min="0" max="1" step="0.01" value="0.40">
+<label for="shape">유리 형태</label><select id="shape"><option value="0">둥근 사각 기둥</option><option value="1">구체</option><option value="2">도넛</option></select>
+<div class="actions"><button id="pause" aria-pressed="false">일시정지</button><button id="reset">시점 초기화</button></div></aside>
+<footer><span>드래그하여 회전 &nbsp;·&nbsp; 스크롤하여 확대</span><span id="status">WEBGL 2 / INITIALIZING</span></footer>
+<div id="error" class="error" role="alert"><h2>렌더러를 시작할 수 없습니다</h2><p id="errorText"></p></div>
+<script>
+/* Entire scene is analytic. No meshes, textures, libraries or network access.
+   Bounded SDF marching, Snell refraction, Schlick Fresnel, spectral RGB paths,
+   Beer–Lambert attenuation. Reflected secondary paths use a one-hit lighting
+   approximation; caustics on the floor are procedural, not photon traced. */
+'use strict';
+const canvas=document.getElementById('scene');
+const gl=canvas.getContext('webgl2',{alpha:false,antialias:false,depth:false,powerPreference:'high-performance'});
+const fail=message=>{document.getElementById('error').style.display='grid';document.getElementById('errorText').textContent=message;};
+const vertex=`#version 300 es
+precision highp float;
+void main(){vec2 p=vec2(float((gl_VertexID<<1)&2),float(gl_VertexID&2));gl_Position=vec4(p*2.-1.,0.,1.);}`;
+const fragment=`#version 300 es
+precision highp float;
+out vec4 fragColor;
+uniform vec2 uResolution;
+uniform float uTime,uWaves,uDispersion,uAbsorption;
+uniform vec3 uCamera;
+uniform int uShape;
+const float EPS=.0025;
+const float FAR=26.;
+mat2 rot(float a){return mat2(cos(a),-sin(a),sin(a),cos(a));}
+float glass(vec3 p){
+ p.y-=.13;p.xz=rot(.34)*p.xz;
+ if(uShape==1)return length(p)-1.18;
+ if(uShape==2){p.xy=rot(-.18)*p.xy;return length(vec2(length(p.xy)-.88,p.z))-.34;}
+ vec3 q=abs(p)-vec3(.77,1.04,.77);
+ return length(max(q,0.))+min(max(q.x,max(q.y,q.z)),0.)-.16;
+}
+float wave(vec2 p){
+ float t=uTime;
+ return uWaves*(.075*sin(dot(p,vec2(1.4,.8))-t*1.1)+.048*sin(dot(p,vec2(-1.3,2.1))+t*.87)+.022*sin(dot(p,vec2(3.7,2.6))-t*1.8)+.009*sin(dot(p,vec2(7.1,-4.2))+t*2.1));
+}
+float water(vec3 p){return max(p.y-wave(p.xz),max(length(p.xz)-5.7,-1.48-p.y));}
+int medium(vec3 p){if(glass(p)<0.)return 2;if(water(p)<0.)return 1;return 0;}
+float ior(int m,int c){if(m==0)return 1.;float spectral=float(c-1);return m==1?1.333+spectral*.004*uDispersion:1.510+spectral*.047*uDispersion;}
+vec3 extinction(int m){if(m==2)return vec3(.36,.075,.12)*uAbsorption;if(m==1)return vec3(.17,.047,.028)*(.3+uAbsorption);return vec3(0.);}
+vec3 environment(vec3 rd){
+ float h=clamp(rd.y*.5+.5,0.,1.);
+ vec3 col=mix(vec3(.025,.052,.066),vec3(.21,.31,.34),pow(h,1.5));
+ col+=vec3(.32,.46,.48)*pow(max(0.,dot(rd,normalize(vec3(-.7,.25,-1.)))),8.);
+ // Studio softboxes expressed as directional rectangles with softened edges.
+ vec3 a=normalize(vec3(-.7,1.5,-.6));
+ float soft=pow(max(dot(rd,a),0.),52.);
+ col+=vec3(3.6,3.7,3.35)*soft;
+ float strip=smoothstep(.965,.98,dot(rd,normalize(vec3(1.3,.65,.6))));
+ col+=vec3(2.4,1.58,.82)*strip;
+ float panel=(1.-smoothstep(.015,.06,abs(rd.x+.27)))*smoothstep(.1,.35,rd.y)*(1.-smoothstep(.75,.95,rd.y))*smoothstep(.2,.5,-rd.z);
+ col+=vec3(2.,2.9,3.2)*panel;
+ return col;
+}
+// Nearest relevant boundary. Water is excluded inside solid glass, so there
+// is no fictitious air/water interface passing through the glass interior.
+vec2 scene(vec3 p,int m){
+ float g=abs(glass(p));float w=m==2?100.:abs(water(p))*.72;
+ float f=abs(p.y+1.52);
+ if(f<g&&f<w)return vec2(f,3.);
+ return g<w?vec2(g,2.):vec2(w,1.);
+}
+vec2 march(vec3 ro,vec3 rd,int m){
+ float t=.004;
+ for(int j=0;j<88;j++){
+  vec2 d=scene(ro+rd*t,m);
+  if(d.x<EPS)return vec2(t,d.y);
+  t+=max(d.x*.86,.001);
+  if(t>FAR)break;
+ }
+ return vec2(FAR,0.);
+}
+vec3 normalAt(vec3 p,int kind){
+ vec2 e=vec2(.002,0.);
+ if(kind==3)return vec3(0,1,0);
+ if(kind==2)return normalize(vec3(glass(p+e.xyy)-glass(p-e.xyy),glass(p+e.yxy)-glass(p-e.yxy),glass(p+e.yyx)-glass(p-e.yyx)));
+ return normalize(vec3(water(p+e.xyy)-water(p-e.xyy),water(p+e.yxy)-water(p-e.yxy),water(p+e.yyx)-water(p-e.yyx)));
+}
+vec3 floorColor(vec3 p){
+ vec2 uv=p.xz*.85;
+ vec2 fw=vec2(max(.002,length(p-uCamera)/uResolution.y*.9));
+ vec2 grid=abs(fract(uv-.5)-.5)/fw;
+ float line=1.-smoothstep(.6,1.7,min(grid.x,grid.y));
+ float checker=mod(floor(uv.x)+floor(uv.y),2.);
+ vec3 col=mix(vec3(.20,.29,.29),vec3(.28,.37,.35),checker);
+ col=mix(col,vec3(.09,.16,.17),line*.6);
+ float r=length(p.xz);
+ col*=mix(.30,1.,1.-smoothstep(5.65,5.8,r));
+ float shadow=1.-.64*exp(-dot(p.xz-vec2(.5,.3),p.xz-vec2(.5,.3))*.68);
+ col*=shadow;
+ // Animated focus bands give the floor a gentle caustic light pattern.
+ float a=sin(p.x*3.6+p.z*2.8+uTime*.8+sin(p.z*2.-uTime)*.8);
+ float b=sin(p.z*4.2-p.x*2.5-uTime*.65+sin(p.x*2.+uTime*.8)*.7);
+ float caustic=pow(max(0.,1.-abs(a+b)*.55),16.);
+ col+=vec3(.21,.37,.30)*caustic*uWaves*(1.-smoothstep(5.,5.7,r));
+ float ring=exp(-pow((r-5.74)*35.,2.));col+=vec3(.23,.36,.33)*ring;
+ return col;
+}
+vec3 reflectedLight(vec3 p,vec3 rd){
+ if(rd.y<-.001){float t=(-1.52-p.y)/rd.y;if(t>0.&&t<22.){vec3 q=p+rd*t;return mix(floorColor(q),environment(rd),1.-exp(-t*.045));}}
+ return environment(rd);
+}
+float traceChannel(vec3 ro,vec3 rd,int channel){
+ float light=0.,throughput=1.;int m=medium(ro);
+ for(int bounce=0;bounce<7;bounce++){
+  vec2 hit=march(ro,rd,m);
+  throughput*=exp(-extinction(m)[channel]*hit.x);
+  if(hit.y<.5){light+=throughput*environment(rd)[channel];break;}
+  vec3 p=ro+rd*hit.x;int kind=int(hit.y);
+  if(kind==3){light+=throughput*floorColor(p)[channel];break;}
+  vec3 n=normalAt(p,kind);if(dot(n,rd)>0.)n=-n;
+  // Probe the transmitted side to resolve glass-air vs glass-water IOR.
+  int nextMedium=medium(p-n*.014);
+  float n1=ior(m,channel),n2=ior(nextMedium,channel),eta=n1/n2;
+  float cosine=clamp(-dot(n,rd),0.,1.);
+  float f0=(n1-n2)/(n1+n2);f0*=f0;
+  float fresnel=f0+(1.-f0)*pow(1.-cosine,5.);
+  vec3 transmitted=refract(rd,n,eta);
+  vec3 reflected=reflect(rd,n);
+  if(dot(transmitted,transmitted)<.01){rd=reflected;ro=p+n*.014;}
+  else{
+   vec3 reflectedColor=reflectedLight(p+n*.014,reflected);
+   // Reflective light travels in the incident medium.
+   reflectedColor*=exp(-extinction(m)*.7);
+   light+=throughput*fresnel*reflectedColor[channel];
+   throughput*=1.-fresnel;rd=normalize(transmitted);ro=p-n*.014;m=nextMedium;
+  }
+  if(throughput<.008)break;
+  if(bounce==6)light+=throughput*environment(rd)[channel];
+ }
+ return light;
+}
+void main(){
+ vec2 uv=(2.*gl_FragCoord.xy-uResolution)/uResolution.y;
+ vec3 target=vec3(0.,-.12,0.);
+ vec3 forward=normalize(target-uCamera),right=normalize(cross(forward,vec3(0,1,0))),up=cross(right,forward);
+ vec3 rd=normalize(forward*1.85+uv.x*right+uv.y*up);
+ vec3 col=vec3(traceChannel(uCamera,rd,0),traceChannel(uCamera,rd,1),traceChannel(uCamera,rd,2));
+ col*=1.35;
+ col=(col*(2.51*col+.03))/(col*(2.43*col+.59)+.14);
+ col=pow(clamp(col,0.,1.),vec3(1./2.2));
+ col*=1.-.19*smoothstep(.3,1.6,length(uv*.7));
+ // Sub-LSB procedural dither prevents banding without texture assets.
+ col+=(fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5)/255.;
+ fragColor=vec4(col,1.);
+}`;
+if(!gl){fail('이 브라우저에서 WebGL2를 사용할 수 없습니다. 하드웨어 가속을 켠 최신 브라우저에서 열어 주세요.');}
+else{try{
+function compile(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
+const program=gl.createProgram();const vs=compile(gl.VERTEX_SHADER,vertex),fs=compile(gl.FRAGMENT_SHADER,fragment);gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));gl.deleteShader(vs);gl.deleteShader(fs);gl.useProgram(program);gl.bindVertexArray(gl.createVertexArray());
+const uniforms={};for(const n of ['Resolution','Time','Waves','Dispersion','Absorption','Camera','Shape'])uniforms[n]=gl.getUniformLocation(program,'u'+n);
+const values={waves:.55,dispersion:.65,absorption:.4};
+for(const key of Object.keys(values)){document.getElementById(key).addEventListener('input',e=>{values[key]=+e.target.value;document.getElementById(key+'Out').value=(+e.target.value).toFixed(2);});}
+let azimuth=.56,elevation=.36,distance=7.5,targetAz=.56,targetEl=.36,targetDist=7.5;
+let paused=matchMedia('(prefers-reduced-motion: reduce)').matches,time=0,last=performance.now(),frameCount=0,frameTime=0,quality=.80,lost=false;
+const pause=document.getElementById('pause');function updatePause(){pause.textContent=paused?'재생':'일시정지';pause.setAttribute('aria-pressed',String(paused));}updatePause();
+pause.onclick=()=>{paused=!paused;updatePause();};document.getElementById('reset').onclick=()=>{targetAz=.56;targetEl=.36;targetDist=7.5;};
+let pointer=null,px=0,py=0;
+canvas.addEventListener('pointerdown',e=>{if(pointer!==null)return;pointer=e.pointerId;px=e.clientX;py=e.clientY;canvas.setPointerCapture(pointer);canvas.focus({preventScroll:true});});
+canvas.addEventListener('pointermove',e=>{if(e.pointerId!==pointer)return;targetAz-=(e.clientX-px)*.006;targetEl=Math.max(.07,Math.min(1.35,targetEl+(e.clientY-py)*.005));px=e.clientX;py=e.clientY;});
+const release=e=>{if(e.pointerId===pointer)pointer=null;};canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);canvas.addEventListener('lostpointercapture',release);
+canvas.addEventListener('wheel',e=>{e.preventDefault();targetDist=Math.max(4.,Math.min(13.,targetDist*Math.exp(Math.max(-100,Math.min(100,e.deltaY))*.001)));},{passive:false});
+canvas.addEventListener('keydown',e=>{const keys=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-',' '];if(!keys.includes(e.key))return;e.preventDefault();if(e.key==='ArrowLeft')targetAz-=.12;if(e.key==='ArrowRight')targetAz+=.12;if(e.key==='ArrowUp')targetEl=Math.min(1.35,targetEl+.08);if(e.key==='ArrowDown')targetEl=Math.max(.07,targetEl-.08);if(e.key==='+'||e.key==='=')targetDist=Math.max(4,targetDist-.4);if(e.key==='-')targetDist=Math.min(13,targetDist+.4);if(e.key===' '){paused=!paused;updatePause();}});
+function resize(){const scale=Math.min(devicePixelRatio||1,1.5)*quality;const budget=Math.min(1,Math.sqrt((650000*quality*quality)/(innerWidth*innerHeight*scale*scale)));const w=Math.max(1,Math.round(innerWidth*scale*budget)),h=Math.max(1,Math.round(innerHeight*scale*budget));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}}
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();lost=true;fail('그래픽 연결이 일시적으로 중단되었습니다. 복구를 기다리고 있습니다.');});canvas.addEventListener('webglcontextrestored',()=>location.reload());
+document.addEventListener('visibilitychange',()=>{last=performance.now();});
+function frame(now){if(lost)return;requestAnimationFrame(frame);const elapsed=(now-last)/1000;const dt=Math.min(elapsed,.06);last=now;if(document.hidden)return;if(!paused)time+=dt;
+ const ease=1.-Math.exp(-dt*12.);azimuth+=(targetAz-azimuth)*ease;elevation+=(targetEl-elevation)*ease;distance+=(targetDist-distance)*ease;
+ resize();gl.uniform2f(uniforms.Resolution,canvas.width,canvas.height);gl.uniform1f(uniforms.Time,time);gl.uniform1f(uniforms.Waves,values.waves);gl.uniform1f(uniforms.Dispersion,values.dispersion);gl.uniform1f(uniforms.Absorption,values.absorption);gl.uniform1i(uniforms.Shape,+document.getElementById('shape').value);
+ gl.uniform3f(uniforms.Camera,Math.sin(azimuth)*Math.cos(elevation)*distance,Math.sin(elevation)*distance,Math.cos(azimuth)*Math.cos(elevation)*distance);
+ gl.drawArrays(gl.TRIANGLES,0,3);
+ frameCount++;frameTime+=elapsed;if(frameTime>1.5){const fps=Math.round(frameCount/frameTime);document.getElementById('status').textContent='WEBGL 2 / '+fps+' FPS';if(fps<28&&quality>.45)quality=Math.max(.45,quality-.08);frameCount=0;frameTime=0;}
+}
+requestAnimationFrame(frame);
+}catch(error){console.error(error);fail('셰이더 초기화 오류\n'+error.message);}}
+</script>
+</body>
+</html>

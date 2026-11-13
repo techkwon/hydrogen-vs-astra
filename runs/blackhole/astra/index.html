@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050608">
+<title>UMBRA — A study in gravity</title>
+<style>
+:root{color-scheme:dark;font-family:Arial,Helvetica,sans-serif;color:#e8e6e1;background:#050608}*{box-sizing:border-box}body{margin:0;overflow:hidden}canvas{display:block;width:100vw;height:100dvh;position:fixed;inset:0}main{position:relative;width:100%;height:100dvh;min-height:400px;pointer-events:none;background:linear-gradient(180deg,rgba(3,5,8,.35),transparent 23%,transparent 72%,rgba(3,5,8,.65))}header{position:absolute;top:42px;left:48px;right:48px;display:flex;justify-content:space-between;align-items:flex-start}.wordmark{font-size:19px;letter-spacing:.32em;font-weight:500}.subtitle{margin-top:12px;font:10px/1.5 monospace;letter-spacing:.17em;color:#81858d}.index{font:10px/1.7 monospace;text-align:right;letter-spacing:.13em;color:#92959c}.dot{display:inline-block;width:5px;height:5px;background:#eab783;border-radius:50%;margin-right:9px;box-shadow:0 0 9px #eab78388}footer{position:absolute;bottom:38px;left:48px;right:48px;display:flex;align-items:flex-end;justify-content:space-between;gap:30px}.caption{max-width:300px}.caption h1{font-size:clamp(25px,3vw,39px);font-weight:400;letter-spacing:-.035em;margin:0 0 10px}.caption p{color:#898d95;font-size:11px;line-height:1.7;margin:0;letter-spacing:.035em}.controls{pointer-events:auto;width:260px}.control-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px;font:10px monospace;letter-spacing:.08em}.control-heading label{color:#a4a6ac}.control-heading output{color:#f0c399;font-variant-numeric:tabular-nums}input[type=range]{appearance:none;-webkit-appearance:none;width:100%;height:3px;margin:9px 0 13px;cursor:pointer;background:linear-gradient(90deg,#b44924,#ffc68e 47%,#e6efff 78%,#91b5ff);border-radius:5px}input[type=range]::-webkit-slider-thumb{appearance:none;width:12px;height:12px;background:#f2e9dc;border:3px solid #11151b;border-radius:50%;box-shadow:0 0 0 1px #bdc0c5}input[type=range]::-moz-range-thumb{width:7px;height:7px;background:#f2e9dc;border:3px solid #11151b;border-radius:50%;box-shadow:0 0 0 1px #bdc0c5}input:focus-visible,button:focus-visible{outline:2px solid #f0c399;outline-offset:7px}.control-bottom{display:flex;justify-content:space-between;align-items:center;color:#777e88;font:9px monospace;letter-spacing:.1em}button{background:none;color:#a4a6ac;border:0;padding:9px 0 9px 14px;font:9px monospace;letter-spacing:.1em;cursor:pointer;transition:color .2s}button:hover{color:#fff}.error{display:none;position:fixed;z-index:2;inset:30% 10% auto;max-width:650px;margin:auto;padding:30px;background:#11151b;border:1px solid #555;color:#eee;line-height:1.6}.error.visible{display:block}.error code{display:block;white-space:pre-wrap;color:#f0c399;font-size:12px}.hud{animation:enter 1.6s ease both}@keyframes enter{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}@media(max-width:600px){header{top:26px;left:24px;right:24px}.wordmark{font-size:16px}.index{font-size:8px}.subtitle{font-size:8px}footer{left:24px;right:24px;bottom:24px;gap:22px;flex-direction:column;align-items:stretch}.caption h1{font-size:27px}.caption p{font-size:10px}.controls{width:100%;max-width:340px}.control-heading{margin-bottom:8px}}@media(prefers-reduced-motion:reduce){.hud{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="cosmos" aria-label="Animated black hole with a luminous accretion disk and gravitationally lensed stars"></canvas>
+<main>
+<header class="hud"><div><div class="wordmark">UMBRA</div><div class="subtitle">A STUDY IN GRAVITY</div></div><div class="index"><span class="dot"></span>LIVE SIMULATION<br>01 / EVENT HORIZON</div></header>
+<footer class="hud"><div class="caption"><h1>Where light bends.</h1><p>A black hole. An incandescent disk.<br>A universe pulled out of shape.</p></div><div class="controls"><div class="control-heading"><label for="temperature">DISK TEMPERATURE</label><output id="temperatureValue" for="temperature">6,500 K</output></div><input id="temperature" type="range" min="2500" max="18000" value="6500" step="100" aria-label="Disk temperature in kelvin"><div class="control-bottom"><span>COOL</span><span>HOT</span><button id="pause" type="button" aria-pressed="false">Ⅱ PAUSE ORBIT</button></div></div></footer>
+</main>
+<div class="error" id="error" role="alert">This experience requires WebGL2.<code id="errorDetail"></code></div>
+<script>
+'use strict';
+(() => {
+const canvas = document.getElementById('cosmos');
+const error = message => {document.getElementById('error').classList.add('visible');document.getElementById('errorDetail').textContent=message;};
+const gl = canvas.getContext('webgl2',{alpha:false,antialias:false,depth:false,stencil:false,powerPreference:'high-performance'});
+if(!gl){error('WebGL2 is unavailable. Try a browser with hardware acceleration enabled.');return;}
+const vertex = `#version 300 es
+precision highp float;
+void main(){vec2 p=vec2(float((gl_VertexID<<1)&2),float(gl_VertexID&2));gl_Position=vec4(p*2.0-1.0,0.0,1.0);}`;
+const fragment = `#version 300 es
+precision highp float;
+out vec4 fragColor;
+uniform vec2 uResolution;
+uniform float uTime;
+uniform float uTemperature;
+#define PI 3.14159265359
+float hash(float n){return fract(sin(n)*43758.5453123);}
+float hash3(vec3 p){p=fract(p*.1031);p+=dot(p,p.yzx+33.33);return fract((p.x+p.y)*p.z);}
+float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash3(i),hash3(i+vec3(1,0,0)),f.x),mix(hash3(i+vec3(0,1,0)),hash3(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash3(i+vec3(0,0,1)),hash3(i+vec3(1,0,1)),f.x),mix(hash3(i+vec3(0,1,1)),hash3(i+vec3(1,1,1)),f.x),f.y),f.z);}
+vec3 blackbody(float k){float t=clamp(k,1000.,40000.)/100.;vec3 c;c.r=t<=66.?1.:clamp(1.292936*pow(t-60.,-.133205),0.,1.);c.g=t<=66.?clamp(.390082*log(t)-.631841,0.,1.):clamp(1.129891*pow(t-60.,-.075515),0.,1.);c.b=t>=66.?1.:(t<=19.?0.:clamp(.543207*log(t-10.)-1.196254,0.,1.));return pow(c,vec3(2.2));}
+vec3 background(vec3 d){
+ // A procedural sky on the sphere: the ray's final direction lenses every star.
+ vec3 color=vec3(.0014,.002,.0038);
+ float dust=noise(d*5.)*.6+noise(d*13.)*.28+noise(d*36.)*.12;
+ float band=exp(-pow((d.y+.28*d.x-.12)/.16,2.));
+ color+=vec3(.017,.022,.036)*band*pow(dust,2.5);
+ // Cubical direction charts avoid the distortion of a latitude-longitude sky.
+ vec3 a=abs(d);vec2 uv;float face;
+ if(a.x>a.y&&a.x>a.z){uv=d.yz/a.x;face=d.x>0.?1.:2.;}
+ else if(a.y>a.z){uv=d.xz/a.y;face=d.y>0.?3.:4.;}
+ else{uv=d.xy/a.z;face=d.z>0.?5.:6.;}
+ for(int layer=0;layer<3;layer++){
+  float scale=95.+float(layer)*83.;vec2 q=uv*scale;vec2 cell=floor(q);
+  float footprint=clamp(length(fwidth(q)),.035,2.5);
+  for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){
+   vec2 id=cell+vec2(float(x),float(y));float seed=hash3(vec3(id,face+float(layer)*11.));
+   if(seed>.979){vec2 center=id+vec2(hash(seed*234.),hash(seed*947.));float dist=length(q-center);float radius=.045+.075*hash(seed*541.);float width=max(radius,footprint*.48);float star=exp(-dist*dist/(width*width))*radius*radius/(width*width);float halo=exp(-dist*5.)*.045;vec3 tint=mix(vec3(.62,.75,1.),vec3(1.,.76,.49),hash(seed*91.));color+=tint*(star+halo)*(1.8+5.*pow(hash(seed*712.),9.));}
+  }
+ }
+ return color;
+}
+vec3 disk(vec3 p,vec3 direction){
+ float r=length(p.xz);float phi=atan(p.z,p.x);
+ float spin=phi-uTime*.13;float spiral=spin+r*.8;
+ float n=noise(vec3(p.x*.9,p.z*.9,spin)*2.);
+ float fine=noise(vec3(r*10.,sin(spiral)*4.,cos(spiral)*4.));
+ float bands=.66+.21*sin(r*18.+sin(spiral*4.)*1.5)+.13*sin(r*39.-spiral*7.);
+ float texture=clamp((.6+.7*n)*bands+.22*fine,.15,1.5);
+ float edge=smoothstep(2.75,3.15,r)*(1.-smoothstep(7.,9.5,r));
+ float heat=pow(3.1/max(r,3.1),.72);
+ vec3 tangent=normalize(vec3(-p.z,0.,p.x));
+ float doppler=clamp(1./(1.-dot(tangent,-direction)*.42),.65,1.65);
+ vec3 color=blackbody(uTemperature*heat*doppler);
+ return color*texture*edge*pow(heat,2.)*pow(doppler,2.5)*5.;
+}
+vec3 acceleration(vec3 p,float angularMomentum2){float r2=dot(p,p);return -1.5*angularMomentum2*p/(r2*r2*sqrt(r2));}
+void main(){
+ vec2 uv=(gl_FragCoord.xy-.5*uResolution)/uResolution.y;
+ float azimuth=uTime*.025+.25;
+ float elevation=.23+.045*sin(uTime*.06);
+ vec3 origin=vec3(cos(azimuth)*cos(elevation),sin(elevation),sin(azimuth)*cos(elevation))*24.;
+ vec3 forward=normalize(-origin),right=normalize(cross(forward,vec3(0,1,0))),up=cross(right,forward);
+ // Widen the vertical field of view on portrait screens to keep the disk in frame.
+ float focal=mix(1.1,1.7,smoothstep(.5,1.5,uResolution.x/uResolution.y));
+ vec3 velocity=normalize(forward*focal+right*uv.x+up*uv.y);
+ vec3 p=origin;vec3 h=cross(p,velocity);float h2=dot(h,h);
+ vec3 light=vec3(0);float transmission=1.;bool captured=false;
+ // Velocity-Verlet integration of the Schwarzschild light-ray orbit equation,
+ // in units where the event-horizon radius is one (an illustrative approximation).
+ for(int i=0;i<240;i++){
+  float r=length(p);
+  if(r<1.015){captured=true;break;}
+  if(r>38.)break;
+  float dt=clamp((r-1.)*.095,.025,1.3);
+  vec3 acc=acceleration(p,h2);
+  vec3 nextP=p+velocity*dt+.5*acc*dt*dt;
+  vec3 nextV=velocity+.5*(acc+acceleration(nextP,h2))*dt;
+  if(p.y*nextP.y<0.){
+   vec3 hit=mix(p,nextP,p.y/(p.y-nextP.y));float radius=length(hit.xz);
+   if(radius>2.75&&radius<9.5){light+=transmission*disk(hit,normalize(velocity));transmission*=.22;}
+  }
+  // Optically thin hot atmosphere supplies a soft, ray-bent halo around the disk.
+  float cylindrical=length(p.xz);
+  float rim=smoothstep(2.4,3.2,cylindrical)*(1.-smoothstep(6.,10.,cylindrical));
+  float atmosphere=exp(-abs(p.y)*7.)*rim*pow(3./max(cylindrical,3.),2.);
+  light+=transmission*blackbody(uTemperature*.8)*atmosphere*dt*.16;
+  p=nextP;velocity=nextV;
+ }
+ vec3 sky=background(normalize(velocity));
+ if(!captured)light+=sky*transmission;
+ light*=1.25;
+ // Filmic highlight roll-off keeps the hot core white and the cooler rim colored.
+ vec3 color=clamp((light*(2.51*light+.03))/(light*(2.43*light+.59)+.14),0.,1.);
+ color=pow(color,vec3(1./2.2));
+ float vignette=1.-.22*smoothstep(.2,1.25,length(uv));color*=vignette;
+ color+=(hash3(vec3(gl_FragCoord.xy,17.))-.5)/255.;
+ fragColor=vec4(color,1.);
+}`;
+function compile(type,source){const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){const message=gl.getShaderInfoLog(shader);gl.deleteShader(shader);throw new Error(message);}return shader;}
+let program;
+try{program=gl.createProgram();const vs=compile(gl.VERTEX_SHADER,vertex),fs=compile(gl.FRAGMENT_SHADER,fragment);gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);gl.deleteShader(vs);gl.deleteShader(fs);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));}catch(e){error(e.message);return;}
+gl.useProgram(program);gl.bindVertexArray(gl.createVertexArray());
+const uniforms=Object.fromEntries(['uResolution','uTime','uTemperature'].map(name=>[name,gl.getUniformLocation(program,name)]));
+const slider=document.getElementById('temperature'),output=document.getElementById('temperatureValue'),pause=document.getElementById('pause');
+let temperature=Number(slider.value),time=0,last=0,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,frame=0,lost=false;
+function updatePause(){pause.textContent=paused?'▶ RESUME ORBIT':'Ⅱ PAUSE ORBIT';pause.setAttribute('aria-pressed',String(paused));}
+updatePause();pause.addEventListener('click',()=>{paused=!paused;updatePause();});
+slider.addEventListener('input',()=>{temperature=Number(slider.value);output.value=temperature.toLocaleString('en-US')+' K';});
+function resize(){const ratio=Math.min(devicePixelRatio||1,1.5);const pixels=innerWidth*innerHeight*ratio*ratio;const scale=Math.min(1,Math.sqrt(1100000/pixels));const w=Math.max(1,Math.round(innerWidth*ratio*scale)),h=Math.max(1,Math.round(innerHeight*ratio*scale));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}}
+function render(now){if(lost)return;resize();if(last&&!paused&&!document.hidden)time+=Math.min((now-last)/1000,.05);last=now;gl.uniform2f(uniforms.uResolution,canvas.width,canvas.height);gl.uniform1f(uniforms.uTime,time);gl.uniform1f(uniforms.uTemperature,temperature);gl.drawArrays(gl.TRIANGLES,0,3);frame=requestAnimationFrame(render);}
+document.addEventListener('visibilitychange',()=>{last=0;if(document.hidden){cancelAnimationFrame(frame);}else if(!lost){frame=requestAnimationFrame(render);}});
+canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();lost=true;cancelAnimationFrame(frame);error('The graphics context was interrupted. Reload this page to restart.');});
+frame=requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

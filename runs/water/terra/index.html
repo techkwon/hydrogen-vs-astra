@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stillwater — Light through glass</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#07171b}canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}canvas:active{cursor:grabbing}.ui{position:absolute;inset:0;pointer-events:none;color:#e9f5ef}.top{position:absolute;top:clamp(24px,4.5vw,58px);left:clamp(24px,5vw,72px);right:clamp(24px,5vw,72px);display:flex;justify-content:space-between;align-items:start}.brand{font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase}.brand i{display:inline-block;width:7px;height:7px;border-radius:50%;background:#b7e7d9;margin-right:11px;box-shadow:0 0 14px #a4ecde}.edition{font-size:10px;letter-spacing:.2em;color:#c8ded7;opacity:.65;text-transform:uppercase}.intro{position:absolute;left:clamp(24px,5vw,72px);bottom:clamp(90px,13vh,150px);max-width:400px}.eyebrow{font-size:10px;letter-spacing:.23em;text-transform:uppercase;color:#b5d9ce;margin-bottom:18px}.intro h1{font-family:Georgia,'Times New Roman',serif;font-size:clamp(44px,7vw,94px);font-weight:400;letter-spacing:-.055em;line-height:.95;margin:0 0 20px}.intro p{font-size:13px;line-height:1.7;color:#d2e4de;max-width:270px;margin:0;opacity:.8}.bottom{position:absolute;bottom:clamp(25px,4vw,48px);left:clamp(24px,5vw,72px);right:clamp(24px,5vw,72px);display:flex;justify-content:space-between;align-items:end}.hint{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:#d2e5df}.hint span{display:inline-block;border:1px solid #c0ded359;border-radius:50%;width:31px;height:31px;text-align:center;line-height:29px;margin-right:10px;font-size:15px}.status{display:flex;align-items:center;gap:9px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#bfd8cf}.status:before{content:'';width:6px;height:6px;border-radius:50%;background:#ace0cb;box-shadow:0 0 10px #a4eacd}#error{position:absolute;inset:0;display:none;place-content:center;text-align:center;padding:30px;color:#e5f2ed;background:#0b2024;font-size:14px;line-height:1.7}#error strong{font-family:Georgia,serif;font-size:32px;font-weight:400}@media(max-width:600px){.edition{display:none}.intro{bottom:105px}.intro p{max-width:220px}.status{font-size:9px}.hint{font-size:9px}}
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="Animated glass object half submerged in water. Drag to orbit the camera."></canvas>
+<div class="ui" aria-hidden="true"><div class="top"><div class="brand"><i></i>Stillwater</div><div class="edition">A study of light &amp; form &nbsp; / &nbsp; 01</div></div><div class="intro"><div class="eyebrow">An experiment in optics</div><h1>Between<br>surfaces.</h1><p>Light bends, water moves, and a quiet moment takes shape.</p></div><div class="bottom"><div class="hint"><span>↗</span> Drag to explore</div><div class="status">WebGL 2 &nbsp; / &nbsp; Live</div></div></div>
+<div id="error"><strong>Unable to start the visualizer.</strong><br>This browser or device may not support WebGL 2.</div>
+<script>
+'use strict';
+const canvas=document.getElementById('view');
+const gl=canvas.getContext('webgl2',{antialias:false,alpha:false,powerPreference:'high-performance'});
+const error=document.getElementById('error');
+if(!gl){error.style.display='grid';throw new Error('WebGL2 unavailable');}
+const vs=`#version 300 es
+in vec2 p; void main(){gl_Position=vec4(p,0.,1.);}`;
+const fs=`#version 300 es
+precision highp float;
+out vec4 outColor;
+uniform vec2 uResolution; uniform float uTime; uniform vec2 uOrbit;
+#define PI 3.14159265359
+float sat(float x){return clamp(x,0.,1.);}
+// A continuously moving, multi-frequency water surface.
+float water(vec2 p){float t=uTime*.65; return .045*sin(p.x*2.0+t)*cos(p.y*1.6-t*.7)+.022*sin(p.x*4.3+p.y*3.1-t*1.3)+.012*cos(p.y*7.0-p.x*2.0+t*1.7);}
+vec3 waterNormal(vec2 p){float e=.015;return normalize(vec3(water(p-vec2(e,0.))-water(p+vec2(e,0.)),2.*e,water(p-vec2(0.,e))-water(p+vec2(0.,e))));}
+// Rounded capped cylinder and an open inner cavity form a thick-walled glass tumbler.
+float cylinder(vec3 p,float r,float h){vec2 d=abs(vec2(length(p.xz),p.y))-vec2(r,h);return min(max(d.x,d.y),0.)+length(max(d,0.));}
+float glassSDF(vec3 p){p.y-=.24;float outer=cylinder(p,.66,.88)-.055;float inner=cylinder(p-vec3(0.,.16,0.),.565,.85);return max(outer,-inner);}
+vec3 glassNormal(vec3 p){vec2 e=vec2(.0015,0.);return normalize(vec3(glassSDF(p+e.xyy)-glassSDF(p-e.xyy),glassSDF(p+e.yxy)-glassSDF(p-e.yxy),glassSDF(p+e.yyx)-glassSDF(p-e.yyx)));}
+float traceGlass(vec3 ro,vec3 rd,float maxT){float t=.002;for(int i=0;i<112;i++){float d=glassSDF(ro+rd*t);if(abs(d)<.0015)return t;t+=max(abs(d)*.72,.002);if(t>maxT)break;}return -1.;}
+float traceWater(vec3 ro,vec3 rd){if(abs(rd.y)<.0001)return -1.;float t=-ro.y/rd.y;if(t<0.)return -1.;for(int i=0;i<5;i++){vec3 p=ro+rd*t;t+=(water(p.xz)-p.y)/rd.y;}return t>0.?t:-1.;}
+vec3 env(vec3 d){
+ float h=sat(d.y*.5+.5);vec3 col=mix(vec3(.08,.19,.19),vec3(.63,.78,.72),pow(h,.65));
+ // Large soft studio lights are analytic shapes in the environment.
+ vec3 a=normalize(vec3(-.65,.8,.25));vec3 b=normalize(vec3(.8,.55,-.65));
+ col+=vec3(1.1,1.22,1.10)*pow(max(dot(d,a),0.),85.);
+ col+=vec3(.6,.83,.78)*pow(max(dot(d,b),0.),38.);
+ col+=vec3(.16,.23,.20)*pow(max(dot(d,normalize(vec3(.15,.2,1.))),0.),12.);
+ return col;
+}
+vec3 floorColor(vec3 p){float ripple=sin(p.x*5.+sin(p.z*3.+uTime)*.6)*sin(p.z*5.-uTime*.7);float caustic=pow(sat(.5+.5*ripple),5.);return vec3(.075,.19,.17)+vec3(.12,.26,.20)*caustic;}
+vec3 background(vec3 ro,vec3 rd){float tf=(-2.05-ro.y)/rd.y;if(tf>0. && rd.y<-.001){vec3 p=ro+rd*tf;return mix(floorColor(p),vec3(.08,.22,.21),1.-exp(-tf*.09));}return env(rd);}
+vec3 throughWater(vec3 p,vec3 rd){vec3 n=waterNormal(p.xz);if(dot(rd,n)>0.)n=-n;float eta=rd.y<0.?1./1.333:1.333;vec3 refr=refract(rd,n,eta);if(length(refr)<.01)refr=reflect(rd,n);float f=.02+.98*pow(1.-abs(dot(-rd,n)),5.);vec3 trans=background(p+refr*.02,refr);float dist=rd.y<0.?max(0.,(-2.05-p.y)/min(refr.y,-.03)):0.;trans=mix(trans,vec3(.035,.22,.20),1.-exp(-dist*.20));vec3 reflected=env(reflect(rd,n));return mix(trans,reflected,f);}
+vec3 sceneBehind(vec3 ro,vec3 rd){float w=traceWater(ro,rd);if(w>0. && w<40.)return throughWater(ro+rd*w,rd);vec3 c=background(ro,rd);if(ro.y<water(ro.xz)){c=mix(c,vec3(.035,.23,.21),.22);}return c;}
+vec3 shadeGlass(vec3 ro,vec3 rd,float t){vec3 p=ro+rd*t;vec3 n=glassNormal(p);if(dot(n,rd)>0.)n=-n;float facing=sat(dot(-rd,n));float fres=.045+.955*pow(1.-facing,5.);vec3 reflected=env(reflect(rd,n));vec3 color=vec3(0.);float path=0.;
+ // Three nearby indices of refraction produce subtle chromatic dispersion.
+ for(int c=0;c<3;c++){float ior= c==0?1.505:(c==1?1.515:1.53);vec3 inside=refract(rd,n,1./ior);vec3 start=p+inside*.008;float travel=traceGlass(start,inside,4.);vec3 exitP;vec3 exitD;if(travel>0.){exitP=start+inside*travel;vec3 en=glassNormal(exitP);if(dot(en,inside)>0.)en=-en;exitD=refract(inside,en,ior);if(length(exitD)<.01)exitD=reflect(inside,en);path=max(path,travel);}else{exitP=start;exitD=inside;}vec3 sampleColor=sceneBehind(exitP+exitD*.012,exitD);if(c==0)color.r=sampleColor.r;else if(c==1)color.g=sampleColor.g;else color.b=sampleColor.b;}
+ color*=exp(-vec3(.12,.055,.025)*path);color=mix(color,reflected,fres);float edge=pow(1.-facing,3.);color+=vec3(.14,.22,.19)*edge;return color;}
+void main(){vec2 uv=(gl_FragCoord.xy-.5*uResolution)/uResolution.y;float yaw=uOrbit.x,pitch=uOrbit.y;vec3 target=vec3(0.,.18,0.);float radius=4.5;vec3 ro=target+radius*vec3(sin(yaw)*cos(pitch),sin(pitch),cos(yaw)*cos(pitch));vec3 fw=normalize(target-ro),right=normalize(cross(fw,vec3(0.,1.,0.))),up=cross(right,fw);vec3 rd=normalize(fw+1.05*uv.x*right+1.05*uv.y*up);float tg=traceGlass(ro,rd,15.);float tw=traceWater(ro,rd);vec3 col;
+ if(tg>0. && (tw<0. || tg<tw)){col=shadeGlass(ro,rd,tg);}else if(tw>0.){vec3 p=ro+rd*tw;vec3 n=waterNormal(p.xz);vec3 refr=refract(rd,n,1./1.333);float g=traceGlass(p+refr*.01,refr,12.);vec3 trans=g>0.?shadeGlass(p+refr*.01,refr,g):background(p+refr*.01,refr);float f=.02+.98*pow(1.-sat(dot(-rd,n)),5.);col=mix(trans,env(reflect(rd,n)),f);col=mix(col,vec3(.04,.22,.20),.13);float ring=exp(-abs(length(p.xz)-.70)*26.);col+=ring*vec3(.08,.14,.12)*(0.5+0.5*sin(atan(p.z,p.x)*8.+uTime*2.));}else col=background(ro,rd);
+ // Filmic presentation, with a gentle vignette and fine procedural grain.
+ col=col/(1.+col*.65);col=pow(max(col,0.),vec3(.4545));float vignette=1.-.28*dot(uv,uv);col*=sat(vignette);float grain=fract(sin(dot(gl_FragCoord.xy+uTime,vec2(12.9898,78.233)))*43758.5453)-.5;col+=grain*.012;outColor=vec4(col,1.);}`;
+function compile(type,source){const s=gl.createShader(type);gl.shaderSource(s,source);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s));return s;}
+let program;
+try{program=gl.createProgram();gl.attachShader(program,compile(gl.VERTEX_SHADER,vs));gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(program));}catch(e){error.style.display='grid';console.error(e);throw e;}
+gl.useProgram(program);const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);const pos=gl.getAttribLocation(program,'p');gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+const res=gl.getUniformLocation(program,'uResolution'),time=gl.getUniformLocation(program,'uTime'),orbit=gl.getUniformLocation(program,'uOrbit');let yaw=.48,pitch=.23,drag=false,lastX=0,lastY=0;
+canvas.addEventListener('pointerdown',e=>{drag=true;lastX=e.clientX;lastY=e.clientY;canvas.setPointerCapture(e.pointerId);});canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw-=(e.clientX-lastX)*.006;pitch=Math.max(.06,Math.min(1.15,pitch+(e.clientY-lastY)*.006));lastX=e.clientX;lastY=e.clientY;});canvas.addEventListener('pointerup',()=>drag=false);canvas.addEventListener('pointercancel',()=>drag=false);
+function render(ms){const scale=Math.min(window.devicePixelRatio||1,1.25);const w=Math.max(1,Math.floor(canvas.clientWidth*scale)),h=Math.max(1,Math.floor(canvas.clientHeight*scale));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}gl.uniform2f(res,w,h);gl.uniform1f(time,ms*.001);gl.uniform2f(orbit,yaw,pitch);gl.drawArrays(gl.TRIANGLES,0,3);requestAnimationFrame(render);}requestAnimationFrame(render);
+</script>
+</body></html>

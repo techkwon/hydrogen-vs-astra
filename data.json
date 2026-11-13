@@ -1,0 +1,754 @@
+{
+ "title": "Gemini 4 Hydrogen vs GPT-6 Astra — WebGL2 5라운드",
+ "episode": "누구나쉽게 11편",
+ "date": "2026-11-13",
+ "video_url": "",
+ "models": {
+  "hydrogen": {
+   "name": "Gemini 4 Hydrogen",
+   "color": "#4C8DFF",
+   "tool": "agy (Antigravity CLI)",
+   "price": [
+    1.5,
+    7.5
+   ]
+  },
+  "astra": {
+   "name": "GPT-6 Astra",
+   "color": "#FF5A4E",
+   "tool": "Codex CLI",
+   "price": [
+    10,
+    50
+   ]
+  },
+  "sonnet": {
+   "name": "Claude Sonnet 5.5",
+   "color": "#D9A05B",
+   "tool": "Claude Code",
+   "price": null
+  },
+  "terra": {
+   "name": "GPT-6.1 Terra",
+   "color": "#3FB68B",
+   "tool": "Codex CLI",
+   "price": null
+  }
+ },
+ "order": [
+  "hydrogen",
+  "astra",
+  "sonnet",
+  "terra"
+ ],
+ "common_tail": "Save the result as one self-contained file named index.html in the current directory. Use raw WebGL2 only, no external libraries or network requests. Do it in one go, do not ask questions.",
+ "facts": {
+  "price_per_million": {
+   "hydrogen": [
+    1.5,
+    7.5
+   ],
+   "astra": [
+    10,
+    50
+   ],
+   "ratio": 6.7
+  },
+  "artificial_analysis": {
+   "hydrogen": {
+    "index_xhigh": 54,
+    "index_high": 51,
+    "cost_per_task": 3.16
+   },
+   "astra": {
+    "index_max": 57,
+    "cost_per_task": 6.24
+   }
+  },
+  "sources": [
+   "Google 블로그 (2026-11-12)",
+   "OpenAI 가격 페이지",
+   "Artificial Analysis 모델 페이지 (2026-11-13 확인)"
+  ],
+  "note": "Hydrogen은 기본 설정(high)으로 돌렸습니다."
+ },
+ "rounds": [
+  {
+   "id": "water",
+   "name": "물과 유리",
+   "prompt": "Create a real-time WebGL2 water and glass visualizer built from pure math and signed distance functions: a glass object half-submerged in moving water, with refraction, reflection, chromatic dispersion and light absorption. Let the user orbit the camera with the mouse.\n\nSave the result as one self-contained file named index.html in the current directory. Use raw WebGL2 only, no external libraries or network requests. Do it in one go, do not ask questions.",
+   "runs": {
+    "hydrogen": {
+     "seconds": 484,
+     "bytes": 48658,
+     "page": "runs/water/hydrogen/index.html",
+     "video": "video/water-hydrogen.mp4",
+     "poster": "poster/water-hydrogen.jpg",
+     "tokens": {
+      "input": 138398,
+      "output": 89783
+     },
+     "cost_usd": 0.881,
+     "cost_kind": "estimate"
+    },
+    "astra": {
+     "seconds": 235,
+     "bytes": 16704,
+     "page": "runs/water/astra/index.html",
+     "video": "video/water-astra.mp4",
+     "poster": "poster/water-astra.jpg",
+     "tokens": {
+      "input": 58231,
+      "output": 11410,
+      "cached_input": 832000
+     },
+     "cost_usd": 1.153,
+     "cost_kind": "estimate"
+    },
+    "sonnet": {
+     "seconds": 341,
+     "bytes": 21272,
+     "page": "runs/water/sonnet/index.html",
+     "video": "video/water-sonnet.mp4",
+     "poster": "poster/water-sonnet.jpg",
+     "cost_usd": 0.679,
+     "cost_kind": "reported"
+    },
+    "terra": {
+     "seconds": 68,
+     "bytes": 10728,
+     "page": "runs/water/terra/index.html",
+     "video": "video/water-terra.mp4",
+     "poster": "poster/water-terra.jpg",
+     "tokens": {
+      "input": 52503,
+      "output": 5328,
+      "cached_input": 403584
+     },
+     "cost_usd": null,
+     "cost_kind": "unknown"
+    }
+   },
+   "points": {
+    "hydrogen": 16,
+    "sonnet": 11,
+    "terra": 4,
+    "astra": 9
+   },
+   "ballots": [
+    {
+     "judge": "hydrogen",
+     "ranking": [
+      "hydrogen",
+      "sonnet",
+      "astra",
+      "terra"
+     ],
+     "reasons": {
+      "astra": "유리 큐브의 색 분산과 굴절이 잘 표현되었으나 유한한 수면 경계와 낮은 시점에서의 렌더링 아티팩트가 아쉽습니다.",
+      "sonnet": "자연스러운 파도와 수중 빛 흡수 및 굴절 표현이 뛰어나고 화면 전반의 시각적 완성도가 매우 높습니다.",
+      "terra": "전반적인 레이아웃과 카메라 회전은 깔끔하지만 색 분산과 빛 흡수 같은 광학 효과가 상대적으로 약합니다.",
+      "hydrogen": "굴절, 반사, 색 분산, 빛 흡수와 수중 시점까지 모든 요구사항을 가장 선명하고 완성도 높게 구현했습니다."
+     }
+    },
+    {
+     "judge": "astra",
+     "ranking": [
+      "hydrogen",
+      "astra",
+      "sonnet",
+      "terra"
+     ],
+     "reasons": {
+      "astra": "유리의 굴절과 무지갯빛 분산이 선명하지만 원형 수면 경계와 격자 배경이 다소 인공적이다.",
+      "sonnet": "물결과 시점 변화는 자연스럽지만 유리 물체가 작고 물과 색이 비슷해 광학 효과가 덜 드러난다.",
+      "terra": "화면 구성은 정돈되어 있지만 낮은 대비와 희미한 유리 표현으로 굴절·색 분산의 전달력이 약하다.",
+      "hydrogen": "반쯤 잠긴 유리의 굴절·반사·색 분산과 수중 시점이 가장 풍부하고 물결과 조작 패널도 완성도가 높다."
+     }
+    },
+    {
+     "judge": "sonnet",
+     "ranking": [
+      "hydrogen",
+      "sonnet",
+      "astra",
+      "terra"
+     ],
+     "reasons": {
+      "astra": "유리 큐브와 타일 바닥, 조절 패널은 좋지만 마지막 프레임에서 물 표면이 원형으로 잘려 보이고 물 느낌이 약합니다.",
+      "sonnet": "물결과 반쯤 잠긴 유리의 굴절·반사가 깔끔하고 자연스럽지만 UI가 없고 유리 형태가 단조롭습니다.",
+      "terra": "유리잔이 너무 흐릿하고 대비가 낮으며 큰 텍스트가 장면을 가려 물과 유리의 시각적 효과가 약합니다.",
+      "hydrogen": "결정형 유리의 분산, 굴절, 수중 시점 전환과 컨트롤 패널까지 갖춰 과제 요구를 가장 풍부하고 완성도 있게 충족합니다."
+     }
+    },
+    {
+     "judge": "terra",
+     "ranking": [
+      "hydrogen",
+      "sonnet",
+      "astra",
+      "terra"
+     ],
+     "reasons": {
+      "astra": "물과 유리의 굴절이 보이지만 격자 바닥과 화면 경계가 다소 거칠다.",
+      "sonnet": "자연스러운 물결과 반쯤 잠긴 유리 물체가 깔끔하게 표현되지만 색 분산은 약하다.",
+      "terra": "차분한 구성이지만 유리와 수면의 대비가 낮아 굴절과 반사가 잘 드러나지 않는다.",
+      "hydrogen": "물결과 유리의 굴절 및 색 분산이 선명하고 여러 시점에서도 완성도가 높다."
+     }
+    }
+   ],
+   "judge_sheet": "judge/water/sheet.jpg"
+  },
+  {
+   "id": "globe",
+   "name": "번개 지구본 + 소리",
+   "prompt": "Build an interactive 3D Earth globe in WebGL2 where simulated lightning strikes appear around the world as glowing ripples, and each strike drives a Web Audio ambient music engine so the music reacts to the storm. Include a start button for audio and let the user drag to rotate the globe.\n\nSave the result as one self-contained file named index.html in the current directory. Use raw WebGL2 only, no external libraries or network requests. Do it in one go, do not ask questions.",
+   "runs": {
+    "hydrogen": {
+     "seconds": 456,
+     "bytes": 85997,
+     "page": "runs/globe/hydrogen/index.html",
+     "video": "video/globe-hydrogen.mp4",
+     "poster": "poster/globe-hydrogen.jpg",
+     "tokens": {
+      "input": 145553,
+      "output": 88408
+     },
+     "cost_usd": 0.881,
+     "cost_kind": "estimate"
+    },
+    "astra": {
+     "seconds": 377,
+     "bytes": 38534,
+     "page": "runs/globe/astra/index.html",
+     "video": "video/globe-astra.mp4",
+     "poster": "poster/globe-astra.jpg",
+     "tokens": {
+      "input": 47087,
+      "output": 20777,
+      "cached_input": 758656
+     },
+     "cost_usd": 1.51,
+     "cost_kind": "estimate"
+    },
+    "sonnet": {
+     "seconds": 726,
+     "bytes": 59080,
+     "page": "runs/globe/sonnet/index.html",
+     "video": "video/globe-sonnet.mp4",
+     "poster": "poster/globe-sonnet.jpg",
+     "cost_usd": 1.323,
+     "cost_kind": "reported"
+    },
+    "terra": {
+     "seconds": 57,
+     "bytes": 12413,
+     "page": "runs/globe/terra/index.html",
+     "video": "video/globe-terra.mp4",
+     "poster": "poster/globe-terra.jpg",
+     "tokens": {
+      "input": 46546,
+      "output": 5292,
+      "cached_input": 320000
+     },
+     "cost_usd": null,
+     "cost_kind": "unknown"
+    }
+   },
+   "points": {
+    "hydrogen": 7,
+    "sonnet": 15,
+    "terra": 9,
+    "astra": 9
+   },
+   "ballots": [
+    {
+     "judge": "hydrogen",
+     "ranking": [
+      "sonnet",
+      "terra",
+      "astra",
+      "hydrogen"
+     ],
+     "reasons": {
+      "sonnet": "초기 오디오 시작 버튼과 선명한 지구본, 강렬한 발광 파문 및 음향 반응 HUD가 프롬프트와 시각적 완성도를 가장 잘 충족합니다.",
+      "terra": "세련된 타이포그래피와 깔끔한 레이아웃 위에 지구 회전과 청록색 번개 파문이 오류 없이 매끄럽게 표현되었습니다.",
+      "astra": "고급스러운 다크 골드 UI와 상세한 제어 패널을 갖추었으나 지구본과 번개 파문의 시인성이 다소 낮습니다.",
+      "hydrogen": "핵심 기능과 파문 효과는 잘 구현되었으나 지구본 텍스처 해상도가 낮고 전반적인 시각적 마감이 다소 아쉽습니다."
+     }
+    },
+    {
+     "judge": "astra",
+     "ranking": [
+      "sonnet",
+      "hydrogen",
+      "terra",
+      "astra"
+     ],
+     "reasons": {
+      "terra": "청록색 발광과 정돈된 화면은 세련됐지만 대륙의 형태가 부정확하고 파동의 존재감이 약합니다.",
+      "sonnet": "알아보기 쉬운 지구와 선명한 발광 파동, 오디오 시작·조절 UI가 조화롭고 눈에 띄는 화면 오류가 없습니다.",
+      "hydrogen": "회전하는 지구와 파동, 오디오 제어가 잘 드러나지만 구름과 지표 표현이 뭉개져 완성도가 떨어집니다.",
+      "astra": "타이포그래피와 배치는 정교하지만 지구와 파동이 지나치게 어두워 핵심 폭풍 효과가 잘 드러나지 않습니다."
+     }
+    },
+    {
+     "judge": "sonnet",
+     "ranking": [
+      "astra",
+      "sonnet",
+      "hydrogen",
+      "terra"
+     ],
+     "reasons": {
+      "terra": "대륙이 흐릿한 노란 덩어리로 보이고 지구가 어색해서 완성도가 낮으며 번개 파문도 약하다.",
+      "sonnet": "사실적인 지구에 번개 파문과 UI가 선명하지만 극지방의 거대한 흰 구름 덩어리가 어색하다.",
+      "hydrogen": "파문 효과는 좋지만 구름이 지나치게 흐릿하고 커서 지구를 가리며 마지막 프레임은 거의 흰 공처럼 보인다.",
+      "astra": "세련된 타이포그래피와 레이아웃, 일관된 어두운 톤으로 파문과 지역 표시가 깔끔하지만 지구가 다소 어둡다."
+     }
+    },
+    {
+     "judge": "terra",
+     "ranking": [
+      "sonnet",
+      "terra",
+      "astra",
+      "hydrogen"
+     ],
+     "reasons": {
+      "terra": "청록색 지구와 번개 파동, 시작 버튼이 선명하고 화면 구성이 안정적이다.",
+      "sonnet": "지구와 빛나는 폭풍 파동이 가장 생생하며 조작 화면도 잘 정돈되어 있다.",
+      "hydrogen": "지구와 파동은 뚜렷하지만 일부 프레임에서 지구가 화면 아래로 잘려 보인다.",
+      "astra": "화면은 세련되고 안정적이지만 지구와 번개 파동이 어두워 잘 드러나지 않는다."
+     }
+    }
+   ],
+   "judge_sheet": "judge/globe/sheet.jpg"
+  },
+  {
+   "id": "store",
+   "name": "쇼핑몰 첫 화면",
+   "prompt": "Design a one-page product launch storefront for a premium mechanical keyboard: a WebGL2 topographic shader hero, a pinned four-stage scrollytelling section, a before/after split slider, a 3D wireframe spec card, and a live color configurator. Make it look like a top design agency built it.\n\nSave the result as one self-contained file named index.html in the current directory. Use raw WebGL2 only, no external libraries or network requests. Do it in one go, do not ask questions.",
+   "runs": {
+    "hydrogen": {
+     "seconds": 316,
+     "bytes": 126173,
+     "page": "runs/store/hydrogen/index.html",
+     "video": "video/store-hydrogen.mp4",
+     "poster": "poster/store-hydrogen.jpg",
+     "tokens": {
+      "input": 114660,
+      "output": 68894
+     },
+     "cost_usd": 0.689,
+     "cost_kind": "estimate"
+    },
+    "astra": {
+     "seconds": 403,
+     "bytes": 43794,
+     "page": "runs/store/astra/index.html",
+     "video": "video/store-astra.mp4",
+     "poster": "poster/store-astra.jpg",
+     "tokens": {
+      "input": 93696,
+      "output": 17869,
+      "cached_input": 1931904
+     },
+     "cost_usd": 1.83,
+     "cost_kind": "estimate"
+    },
+    "sonnet": {
+     "seconds": 1501,
+     "bytes": 84987,
+     "page": "runs/store/sonnet/index.html",
+     "video": "video/store-sonnet.mp4",
+     "poster": "poster/store-sonnet.jpg",
+     "cost_usd": 3.618,
+     "cost_kind": "reported"
+    },
+    "terra": {
+     "seconds": 72,
+     "bytes": 22067,
+     "page": "runs/store/terra/index.html",
+     "video": "video/store-terra.mp4",
+     "poster": "poster/store-terra.jpg",
+     "tokens": {
+      "input": 56873,
+      "output": 7814,
+      "cached_input": 327296
+     },
+     "cost_usd": null,
+     "cost_kind": "unknown"
+    }
+   },
+   "points": {
+    "hydrogen": 12,
+    "sonnet": 12,
+    "terra": 6,
+    "astra": 10
+   },
+   "ballots": [
+    {
+     "judge": "hydrogen",
+     "ranking": [
+      "hydrogen",
+      "astra",
+      "sonnet",
+      "terra"
+     ],
+     "reasons": {
+      "astra": "에이전시 수준의 세련된 타이포그래피와 깔끔한 레이아웃을 갖췄으나 일부 인터랙티브 요소의 시각적 존재감이 다소 약합니다.",
+      "hydrogen": "프롬프트의 모든 핵심 기능을 가장 명확하고 완성도 높게 구현했으며 레이아웃 오류 없이 뛰어난 시각적 품질을 보여줍니다.",
+      "sonnet": "화려한 3D 렌더링과 스펙트로그램 비교 기능이 돋보이지만 스크롤 섹션에서 텍스트가 제품 이미지와 겹치는 가독성 문제가 있습니다.",
+      "terra": "지형 셰이더와 와이어프레임 카드 등 기본 요소는 충실하나 전반적인 그래픽 디테일과 화면 밀도가 다른 시안보다 단순합니다."
+     }
+    },
+    {
+     "judge": "astra",
+     "ranking": [
+      "astra",
+      "sonnet",
+      "terra",
+      "hydrogen"
+     ],
+     "reasons": {
+      "astra": "제품 표현과 타이포그래피가 가장 정교하고 비교 슬라이더·색상 선택 등 요구 요소가 안정적인 구성으로 드러난다.",
+      "hydrogen": "단계별 설명과 비교·설정 화면은 보이지만 낮은 명암 대비와 작은 글씨, 큰 빈 공간이 완성도를 떨어뜨린다.",
+      "sonnet": "지형 배경과 단계별 분해 연출이 요구에 충실하고 인상적이지만 일부 설명 글이 제품과 겹쳐 가독성이 떨어진다.",
+      "terra": "차분한 색상과 정돈된 여백, 와이어프레임 카드가 세련됐지만 단계별 변화와 전후 비교 표현은 상대적으로 덜 뚜렷하다."
+     }
+    },
+    {
+     "judge": "sonnet",
+     "ranking": [
+      "sonnet",
+      "hydrogen",
+      "astra",
+      "terra"
+     ],
+     "reasons": {
+      "sonnet": "등고선 셰이더 히어로와 분해되는 3D 키보드 스크롤 연출, 오렌지 포인트 색상까지 갖춰 완성도가 가장 높지만 텍스트가 키보드와 일부 겹친다.",
+      "hydrogen": "등고선 히어로, 4단계 스토리, 스펙 카드, 구성기가 모두 보이고 일관된 다크 톤이지만 키보드 렌더가 단조롭고 화면이 빽빽하다.",
+      "astra": "깔끔한 에디토리얼 레이아웃과 키보드 비주얼은 좋지만 셰이더 히어로의 존재감이 약하고 일부 프레임에서 텍스트가 잘리는 느낌이 있다.",
+      "terra": "히어로의 등고선 셰이더는 좋지만 키보드가 밋밋하고 빈 공간이 많으며, 와이어프레임 카드와 구성기도 상대적으로 약하다."
+     }
+    },
+    {
+     "judge": "terra",
+     "ranking": [
+      "hydrogen",
+      "sonnet",
+      "terra",
+      "astra"
+     ],
+     "reasons": {
+      "astra": "깔끔한 제품 표현은 돋보이지만 지형 히어로와 주요 인터랙션의 구현이 잘 드러나지 않는다.",
+      "hydrogen": "지형 히어로, 단계별 설명, 비교 화면과 구성기가 일관된 고급 디자인으로 정돈되어 있다.",
+      "sonnet": "지형 그래픽과 분해된 제품 연출이 인상적이지만 일부 단계에서 제품 이미지와 문구가 겹친다.",
+      "terra": "차분하고 세련된 디자인과 사양 카드가 돋보이지만 단계별 서사와 비교 슬라이더는 명확하지 않다."
+     }
+    }
+   ],
+   "judge_sheet": "judge/store/sheet.jpg"
+  },
+  {
+   "id": "city",
+   "name": "미래 도시 비행",
+   "prompt": "Make a futuristic night city I can actually fly through in first person in WebGL2: procedurally generated towers, neon signs, rain, and moving traffic. WASD to move, mouse to look.\n\nSave the result as one self-contained file named index.html in the current directory. Use raw WebGL2 only, no external libraries or network requests. Do it in one go, do not ask questions.",
+   "runs": {
+    "hydrogen": {
+     "seconds": 439,
+     "bytes": 97519,
+     "page": "runs/city/hydrogen/index.html",
+     "video": "video/city-hydrogen.mp4",
+     "poster": "poster/city-hydrogen.jpg",
+     "tokens": {
+      "input": 138222,
+      "output": 84278
+     },
+     "cost_usd": 0.839,
+     "cost_kind": "estimate"
+    },
+    "astra": {
+     "seconds": 348,
+     "bytes": 28513,
+     "page": "runs/city/astra/index.html",
+     "video": "video/city-astra.mp4",
+     "poster": "poster/city-astra.jpg",
+     "tokens": {
+      "input": 62512,
+      "output": 16647,
+      "cached_input": 2043264
+     },
+     "cost_usd": 1.457,
+     "cost_kind": "estimate"
+    },
+    "sonnet": {
+     "seconds": 757,
+     "bytes": 55318,
+     "page": "runs/city/sonnet/index.html",
+     "video": "video/city-sonnet.mp4",
+     "poster": "poster/city-sonnet.jpg",
+     "cost_usd": 1.606,
+     "cost_kind": "reported"
+    },
+    "terra": {
+     "seconds": 53,
+     "bytes": 10465,
+     "page": "runs/city/terra/index.html",
+     "video": "video/city-terra.mp4",
+     "poster": "poster/city-terra.jpg",
+     "tokens": {
+      "input": 40038,
+      "output": 4627,
+      "cached_input": 226176
+     },
+     "cost_usd": null,
+     "cost_kind": "unknown"
+    }
+   },
+   "points": {
+    "hydrogen": 15,
+    "sonnet": 8,
+    "terra": 4,
+    "astra": 13
+   },
+   "ballots": [
+    {
+     "judge": "hydrogen",
+     "ranking": [
+      "hydrogen",
+      "astra",
+      "sonnet",
+      "terra"
+     ],
+     "reasons": {
+      "sonnet": "화려한 네온과 빗줄기가 표현되었으나 비행 중 건물 벽면에 너무 가깝게 붙어 시야가 가려지는 구간이 많습니다.",
+      "hydrogen": "네온 사인, 고가 도로와 교통, 비 효과 및 HUD가 조화롭게 구현되었고 비행 중 시야 가림 없이 안정적입니다.",
+      "terra": "어두운 건물과 단순한 바닥 그리드 위주여서 네온 사인, 빗줄기, 움직이는 교통 요소가 매우 부족합니다.",
+      "astra": "세밀한 빌딩과 텍스트 네온 사인, 도로 교통, 비 효과가 우수하지만 비행 중 건물 표면에 바짝 붙거나 겹치는 문제가 있습니다."
+     }
+    },
+    {
+     "judge": "astra",
+     "ranking": [
+      "hydrogen",
+      "astra",
+      "sonnet",
+      "terra"
+     ],
+     "reasons": {
+      "sonnet": "네온과 빗줄기는 인상적이지만 과도한 발광과 건물 외벽이 화면을 가리는 장면이 몰입을 떨어뜨립니다.",
+      "hydrogen": "네온 건물·도로·차량과 고도 변화가 가장 명확하고, 후반의 빈 공간을 제외하면 시각적 완성도가 가장 높습니다.",
+      "terra": "건물 사이 이동은 보이지만 화면이 지나치게 어둡고 비와 교통 표현이 불분명하며 마지막에는 도시가 거의 보이지 않습니다.",
+      "astra": "밀도 높은 스카이라인과 읽히는 간판, 비 표현이 좋지만 반복되는 외벽 근접 장면이 비행 시야를 가립니다."
+     }
+    },
+    {
+     "judge": "sonnet",
+     "ranking": [
+      "hydrogen",
+      "astra",
+      "sonnet",
+      "terra"
+     ],
+     "reasons": {
+      "hydrogen": "네온 간판, 도로, 횡단보도, 차량, HUD가 갖춰진 가장 완성도 높은 도시로, 끝에서 도시 밖으로 벗어난 점만 아쉽다.",
+      "astra": "네온 간판과 비 내리는 분위기, HUD가 좋지만 건물에 너무 가까이 붙어 창문 클로즈업과 빈 화면이 나온다.",
+      "sonnet": "네온 색감은 화려하지만 건물 벽에 파고들어 흰 화면이 가득 차는 클리핑이 심하고 도시 구조가 잘 안 보인다.",
+      "terra": "전체가 너무 어두워 네온과 교통, 비가 거의 안 보이고 마지막 프레임은 완전히 빈 화면이다."
+     }
+    },
+    {
+     "judge": "terra",
+     "ranking": [
+      "astra",
+      "hydrogen",
+      "sonnet",
+      "terra"
+     ],
+     "reasons": {
+      "sonnet": "화려한 네온 도시와 비가 보이지만 여러 장면에서 건물에 지나치게 가까워 시야가 가려진다.",
+      "hydrogen": "네온 건물과 도로가 풍부하지만 후반부에 도시를 벗어나 넓은 빈 공간이 드러난다.",
+      "terra": "도시가 매우 어둡고 네온과 움직이는 요소가 드물며 마지막에는 거의 빈 화면이 된다.",
+      "astra": "촘촘한 미래 도시와 네온 분위기가 뛰어나지만 일부 장면에서 건물 표면이 시야를 가린다."
+     }
+    }
+   ],
+   "judge_sheet": "judge/city/sheet.jpg"
+  },
+  {
+   "id": "blackhole",
+   "name": "블랙홀 셰이더",
+   "prompt": "Write a WebGL2 fragment shader demo of a black hole with a glowing accretion disk and gravitational lensing that bends the starfield behind it. Add a slow cinematic camera orbit and a small control to change the disk temperature.\n\nSave the result as one self-contained file named index.html in the current directory. Use raw WebGL2 only, no external libraries or network requests. Do it in one go, do not ask questions.",
+   "runs": {
+    "hydrogen": {
+     "seconds": 165,
+     "bytes": 37111,
+     "page": "runs/blackhole/hydrogen/index.html",
+     "video": "video/blackhole-hydrogen.mp4",
+     "poster": "poster/blackhole-hydrogen.jpg",
+     "tokens": {
+      "input": 53602,
+      "output": 41048
+     },
+     "cost_usd": 0.388,
+     "cost_kind": "estimate"
+    },
+    "astra": {
+     "seconds": 120,
+     "bytes": 12923,
+     "page": "runs/blackhole/astra/index.html",
+     "video": "video/blackhole-astra.mp4",
+     "poster": "poster/blackhole-astra.jpg",
+     "tokens": {
+      "input": 32779,
+      "output": 6837,
+      "cached_input": 407040
+     },
+     "cost_usd": 0.67,
+     "cost_kind": "estimate"
+    },
+    "sonnet": {
+     "seconds": 163,
+     "bytes": 13915,
+     "page": "runs/blackhole/sonnet/index.html",
+     "video": "video/blackhole-sonnet.mp4",
+     "poster": "poster/blackhole-sonnet.jpg",
+     "cost_usd": 0.331,
+     "cost_kind": "reported"
+    },
+    "terra": {
+     "seconds": 49,
+     "bytes": 9707,
+     "page": "runs/blackhole/terra/index.html",
+     "video": "video/blackhole-terra.mp4",
+     "poster": "poster/blackhole-terra.jpg",
+     "tokens": {
+      "input": 38159,
+      "output": 4177,
+      "cached_input": 239488
+     },
+     "cost_usd": null,
+     "cost_kind": "unknown"
+    }
+   },
+   "points": {
+    "hydrogen": 15,
+    "sonnet": 11,
+    "terra": 4,
+    "astra": 10
+   },
+   "ballots": [
+    {
+     "judge": "hydrogen",
+     "ranking": [
+      "hydrogen",
+      "sonnet",
+      "astra",
+      "terra"
+     ],
+     "reasons": {
+      "terra": "과도하게 확대되어 별빛 왜곡과 카메라 궤도 변화가 거의 보이지 않으며 원반 표현이 부자연스럽습니다.",
+      "hydrogen": "배경 별빛의 중력 렌즈 왜곡과 역동적인 카메라 궤도가 가장 잘 드러나며 전반적인 완성도가 높습니다.",
+      "astra": "중력 렌즈 효과는 표현됐으나 원반의 밝기 과포화가 심하고 카메라 궤도 변화가 미미합니다.",
+      "sonnet": "자연스러운 카메라 공전과 도플러 효과가 깔끔하게 구현되었으나 배경 별빛의 왜곡 표현이 다소 약합니다."
+     }
+    },
+    {
+     "judge": "astra",
+     "ranking": [
+      "hydrogen",
+      "astra",
+      "sonnet",
+      "terra"
+     ],
+     "reasons": {
+      "terra": "황금빛 원반은 인상적이지만 화면 밖으로 크게 잘리고 별빛 렌즈 효과와 궤도 변화가 잘 드러나지 않는다.",
+      "hydrogen": "휘어진 별 배경과 발광 원반, 온도 조절 UI가 선명하며 프레임별 시점 변화가 가장 뚜렷하다.",
+      "astra": "원반과 별빛 왜곡, 정돈된 UI가 세련되지만 프레임 간 카메라 변화가 미미하다.",
+      "sonnet": "원반과 작은 온도 조절기가 안정적으로 배치됐지만 화면이 어둡고 렌즈 효과와 시점 변화가 약하다."
+     }
+    },
+    {
+     "judge": "sonnet",
+     "ranking": [
+      "sonnet",
+      "hydrogen",
+      "astra",
+      "terra"
+     ],
+     "reasons": {
+      "terra": "카메라가 너무 가까워 강착원반이 화면을 가득 채우고 별 배경이 전혀 보이지 않아 렌즈 효과를 알 수 없습니다.",
+      "hydrogen": "밝은 별밭과 렌즈 왜곡, 카메라 궤도 변화가 잘 보이지만 후반부에 원반이 하얗게 과노출됩니다.",
+      "astra": "원반 형태와 렌즈 아치는 좋지만 중심부가 심하게 하얗게 날아가고 별이 흐리며 프레임 간 변화가 거의 없습니다.",
+      "sonnet": "별 배경, 렌즈 왜곡, 따뜻한 색에서 흰색으로 이어지는 원반 색 균형이 좋고 온도 슬라이더도 깔끔해 가장 완성도가 높습니다."
+     }
+    },
+    {
+     "judge": "terra",
+     "ranking": [
+      "hydrogen",
+      "astra",
+      "sonnet",
+      "terra"
+     ],
+     "reasons": {
+      "terra": "강렬한 원반이 보이지만 화면이 잘리고 별빛 굴절과 카메라 움직임은 확인하기 어렵다.",
+      "hydrogen": "별빛 굴절과 뚜렷한 카메라 회전, 온도 조절 UI가 보여 요청을 가장 폭넓게 충족한다.",
+      "astra": "블랙홀과 빛의 굴절이 선명하고 완성도가 높지만 프레임 간 카메라 움직임은 작다.",
+      "sonnet": "온도 조절 UI와 안정적인 구성이 보이지만 어두운 표현으로 원반과 별빛 굴절이 덜 두드러진다."
+     }
+    }
+   ],
+   "judge_sheet": "judge/blackhole/sheet.jpg"
+  }
+ ],
+ "scoring": "AI 심사위원 4명(= 선수 넷)이 이름을 가린 A·B·C·D 캡처 시트를 보고 1~4위를 매김. 1위 4점 … 4위 1점. 라운드당 최대 16점.",
+ "totals": {
+  "points": {
+   "hydrogen": 65,
+   "sonnet": 57,
+   "terra": 27,
+   "astra": 51
+  },
+  "points_excluding_self": {
+   "hydrogen": 48,
+   "sonnet": 41,
+   "terra": 19,
+   "astra": 37
+  },
+  "ballots": 20,
+  "self_first_votes": 7,
+  "seconds": {
+   "hydrogen": 1860,
+   "astra": 1483,
+   "sonnet": 3488,
+   "terra": 299
+  },
+  "bytes": {
+   "hydrogen": 395458,
+   "astra": 140468,
+   "sonnet": 234572,
+   "terra": 65380
+  },
+  "cost_usd": {
+   "hydrogen": 3.68,
+   "astra": 6.62,
+   "sonnet": 7.56,
+   "terra": null
+  },
+  "output_tokens": {
+   "hydrogen": 372411,
+   "astra": 73540,
+   "terra": 27238
+  }
+ },
+ "limits": [
+  "과제마다 한 번씩만 실행했습니다. 다시 하면 결과가 달라질 수 있습니다.",
+  "심사는 녹화 캡처(정지 화면)만 보고 했습니다. 소리와 조작감은 심사에 들어가지 않았습니다.",
+  "녹화 브라우저(ego-lite)가 마우스 잠금을 막아서, 도시 판은 네 모델 모두 같은 보조 코드(pointer-lock shim)를 넣고 녹화했습니다. 결과물 파일 자체는 수정하지 않았습니다.",
+  "Hydrogen·Astra 비용은 토큰 수 × 공식 단가로 계산한 추정값입니다(캐시된 입력 제외). Sonnet은 Claude Code가 보고한 금액, Terra는 단가 미확인.",
+  "프롬프트 5개는 구글 공식 데모 설명을 바탕으로 직접 쓴 것입니다(공식 프롬프트 원문은 공개되지 않음)."
+ ]
+}
