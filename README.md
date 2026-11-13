@@ -3,6 +3,7 @@
 "누구나쉽게" 11편 실험 자료입니다. Gemini 4 Hydrogen, GPT-6 Astra, Claude Sonnet 5.5, GPT-6.1 Terra 네 모델에게 같은 프롬프트를 한 번씩만 주고 WebGL2 결과물을 만들게 한 다섯 라운드의 원본과 숫자를 모았습니다.
 
 - 페이지: https://techkwon.github.io/hydrogen-vs-astra/
+- 영상: https://youtu.be/n4Cxks1eaw4 (2026-11-13 공개)
 - 페이지의 모든 숫자는 `data.json`에서 읽어 옵니다.
 
 ## 들어 있는 것
